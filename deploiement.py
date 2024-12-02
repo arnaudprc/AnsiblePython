@@ -48,7 +48,7 @@ def main():
 
         elif choice == '4':
             break
-        
+
         else:
             print("Option invalide, veuillez réessayer.")
 
@@ -56,3 +56,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
