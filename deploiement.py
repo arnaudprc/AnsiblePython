@@ -1,5 +1,5 @@
 import paramiko
-from apache2_config import def_config
+from apache2_config import apache, generate_cert, configure_virtual_host
 
 def ssh_connect(hostname, port, username, password):
     client = paramiko.SSHClient()
@@ -7,11 +7,15 @@ def ssh_connect(hostname, port, username, password):
     client.connect(hostname, port, username=username, password=password)
     return client
 
-def install_package(client, package_name):
-    stdin, stdout, stderr = client.exec_command(f'sudo apt-get install -y {package_name}')
+def install_package(client, package_name, password):
+    command = f'sudo apt-get install -y {package_name}'
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    
+    stdin.write(password + '\n')
+    stdin.flush()
+    
     print(stdout.read().decode())
     print(stderr.read().decode())
-    
 
 def configure_package(client, config_command):
     stdin, stdout, stderr = client.exec_command(config_command)
@@ -30,25 +34,29 @@ def main():
         print("\nMenu:")
         print("1. Installer un package")
         print("2. Désinstaller un package")
-        print("3. Configurer un package")
-        print("4. Quitter")
+        print("3. Quitter")
         choice = input("Choisissez une option : ")
 
         if choice == '1':
             package_name = input("Entrez le nom du package à installer : ")
-            install_package(client, package_name)
+            install_package(client, package_name, password)
+            
+            if package_name == 'apache2':
+                apache(client, password)
+                generate_cert(client, password)
+                configure_virtual_host(client, password)
 
         elif choice == '2':
             package_name = input("Entrez le nom du package à désinstaller : ")
-            stdin, stdout, stderr = client.exec_command(f'sudo apt-get remove -y {package_name}')
+            command = f'sudo apt-get remove -y {package_name}'
+            stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+            stdin.write(password + '\n')
+            stdin.flush()
+            
             print(stdout.read().decode())
             print(stderr.read().decode())
 
         elif choice == '3':
-            config_command = input("Entrez la commande de configuration : ")
-            configure_package(client, config_command)
-
-        elif choice == '4':
             break
 
         else:
@@ -58,5 +66,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

@@ -1,88 +1,82 @@
-def apache():
+def apache(client, password):
     print("Apache2 Configuration")
     print("Activation du module SSL")
     
     command = "sudo a2enmod ssl"
-    print(f"Veuillez taper la commande suivante : {command}")
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    stdin.write(password + '\n')
+    stdin.flush()
     
-    user_input = input("Tapez la commande ici : ")
+    print(stdout.read().decode())
+    print(stderr.read().decode())
+
+def generate_cert(client, password):
+    print("Génération du certificat SSL")
+
+    country = input("Entrez le pays (ex: FR) : ")
+    state = input("Entrez l'état ou la province : ")
+    city = input("Entrez la ville : ")
+    org = input("Entrez le nom de l'organisation : ")
+    unit = input("Entrez le nom de l'unité organisationnelle : ")
+    common_name = input("Entrez le nom commun (CN) : ")
+    email = input("Entrez l'adresse e-mail : ")
+
+    command = (
+        f"sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 "
+        f"-keyout /etc/ssl/private/selfsigned.key "
+        f"-out /etc/ssl/certs/selfsigned.crt "
+        f"-subj \"/C={country}/ST={state}/L={city}/O={org}/OU={unit}/CN={common_name}/emailAddress={email}\""
+    )
+
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    stdin.write(password + '\n')
+    stdin.flush()
+
+    stdout_output = stdout.read().decode()
+    stderr_output = stderr.read().decode()
+
+    if stdout_output:
+        print("Sortie standard :")
+        print(stdout_output)
+
+    if stderr_output:
+        print("Sortie d'erreur :")
+        print(stderr_output)
+
+    if not stderr_output:
+        print("Certificat SSL généré avec succès.")
     
-    if user_input == command:
-        print("Commande correcte, activation du module SSL en cours...")
-    else:
-        print("Commande incorrecte, veuillez réessayer.")
+def configure_virtual_host(client, password):
+    config_content = """
+<VirtualHost *:443>
+    ServerName localhost 
+    DocumentRoot /var/www/html
+
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/selfsigned.crt
+    SSLCertificateKeyFile /etc/ssl/private/selfsigned.key
+</VirtualHost>
+"""
+    command = f'echo "{config_content}" | sudo tee /etc/apache2/sites-available/000-default.conf'
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    stdin.write(password + '\n')
+    stdin.flush()
     
-    return
+    print(stdout.read().decode())
+    print(stderr.read().decode())
 
-def install_certbot():
-    print("Installer Certbot")
-    command = "sudo apt-get install -y certbot python3-certbot-apache"
-    print(f"Veuillez taper la commande suivante : {command}")
-
-    user_input = input("Tapez la commande ici : ")
-
-    if user_input == command:
-        print("Commande correcte, installation de Certbot en cours...")
-    else:
-        print("Commande incorrecte, veuillez réessayer.")
+    command = 'sudo a2ensite 000-default.conf'
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    stdin.write(password + '\n')
+    stdin.flush()
     
-    return
+    print(stdout.read().decode())
+    print(stderr.read().decode())
 
-def get_certssl():
-    print("Obtenir un certificat SSL")
-    domain = input("Entrez le nom de domaine pour lequel vous voulez obtenir un certificat SSL : ")
-    email = input("Entrez votre adresse e-mail : ")
-    command = f"sudo certbot --apache -d {domain} -m {email} --agree-tos"
-    print(f"Veuillez taper la commande suivante : {command}")
-
-    user_input = input("Tapez la commande ici : ")
-
-    if user_input == command:
-        print("Commande correcte, obtention du certificat SSL en cours...")
-    else:
-        print("Commande incorrecte, veuillez réessayer.")
+    command = 'sudo systemctl restart apache2'
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    stdin.write(password + '\n')
+    stdin.flush()
     
-    return
-
-def virtualhost_https():
-    print("Configurer un virtual host HTTPS")
-    domain = input("Entrez le nom de domaine pour lequel vous voulez configurer un virtual host HTTPS : ")
-    command = f"sudo a2ensite {domain}-le-ssl.conf"
-    print(f"Veuillez taper la commande suivante : {command}")
-
-    user_input = input("Tapez la commande ici : ")
-
-    if user_input == command:
-        print("Commande correcte, configuration du virtual host HTTPS en cours...")
-    else:
-        print("Commande incorrecte, veuillez réessayer.")
-    
-    return
-
-def activate_virtualhost_https():
-    print("Activer le virtual host HTTPS")
-    command = "sudo systemctl reload apache2"
-    print(f"Veuillez taper la commande suivante : {command}")
-
-    user_input = input("Tapez la commande ici : ")
-
-    if user_input == command:
-        print("Commande correcte, activation du virtual host HTTPS en cours...")
-    else:
-        print("Commande incorrecte, veuillez réessayer.")
-    
-    return
-
-def reload_apache():
-    print("Reload Apache")
-    command = "sudo systemctl reload apache2"
-    print(f"Veuillez taper la commande suivante : {command}")
-
-    user_input = input("Tapez la commande ici : ")
-
-    if user_input == command:
-        print("Commande correcte, redémarrage d'Apache en cours...")
-    else:
-        print("Commande incorrecte, veuillez réessayer.")
-    
-    return
+    print(stdout.read().decode())
+    print(stderr.read().decode())
