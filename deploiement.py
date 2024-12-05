@@ -1,4 +1,5 @@
 import paramiko
+from apache2_config import def_config
 
 def ssh_connect(hostname, port, username, password):
     client = paramiko.SSHClient()
@@ -10,6 +11,7 @@ def install_package(client, package_name):
     stdin, stdout, stderr = client.exec_command(f'sudo apt-get install -y {package_name}')
     print(stdout.read().decode())
     print(stderr.read().decode())
+    
 
 def configure_package(client, config_command):
     stdin, stdout, stderr = client.exec_command(config_command)
