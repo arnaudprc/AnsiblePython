@@ -6,9 +6,6 @@ def apache(client, password):
     stdin, stdout, stderr = client.exec_command(command, get_pty=True)
     stdin.write(password + '\n')
     stdin.flush()
-    
-    print(stdout.read().decode())
-    print(stderr.read().decode())
 
 def generate_cert(client, password):
     print("Génération du certificat SSL")
@@ -61,22 +58,13 @@ def configure_virtual_host(client, password):
     stdin, stdout, stderr = client.exec_command(command, get_pty=True)
     stdin.write(password + '\n')
     stdin.flush()
-    
-    print(stdout.read().decode())
-    print(stderr.read().decode())
 
     command = 'sudo a2ensite 000-default.conf'
     stdin, stdout, stderr = client.exec_command(command, get_pty=True)
     stdin.write(password + '\n')
     stdin.flush()
-    
-    print(stdout.read().decode())
-    print(stderr.read().decode())
 
     command = 'sudo systemctl restart apache2'
     stdin, stdout, stderr = client.exec_command(command, get_pty=True)
     stdin.write(password + '\n')
     stdin.flush()
-    
-    print(stdout.read().decode())
-    print(stderr.read().decode())
