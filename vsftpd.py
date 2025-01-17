@@ -3,22 +3,20 @@ def configure_vsftpd(client, sudo_password):
     def run_command(command, description):
         """Execute a shell command and print its status."""
         print(f"[INFO] {description}...")
-        try:
-            stdin, stdout, stderr = client.exec_command(command, get_pty=True)
-            stdin.write(sudo_password + '\n')
-            stdin.flush()
+        stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+        stdin.write(sudo_password + '\n')
+        stdin.flush()
+        print(stdout.read().decode())
+        error = stderr.read().decode()
+        if error:
+            print(f"[ERROR] {description}. Error: {error}")
+        else:
             print(f"[SUCCESS] {description}.")
-            print(stdout.read().decode())
-            print(stderr.read().decode())
-        except Exception as e:
-            print(f"[ERROR] {description}. Error: {e}")
-            exit(1)
 
     print("[INFO] Starting vsftpd installation and configuration...")
 
     # Install vsftpd
-    run_command("sudo apt update", "Updating package list")
-    run_command("sudo apt install -y vsftpd", "Installing vsftpd")
+    run_command("sudo apt update && sudo apt install -y vsftpd", "Installing vsftpd")
 
     # Backup existing configuration
     run_command("sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.backup", "Backing up vsftpd.conf")
@@ -45,34 +43,26 @@ xferlog_enable=YES
 log_ftp_protocol=YES
 xferlog_file=/var/log/vsftpd.log
 """
-    config_path = "/etc/vsftpd.conf"
     with open("temp_vsftpd.conf", "w") as file:
         file.write(config)
-    run_command(f"sudo mv temp_vsftpd.conf {config_path}", "Applying new vsftpd configuration")
+    run_command("sudo mv temp_vsftpd.conf /etc/vsftpd.conf", "Applying new vsftpd configuration")
 
     # Generate SSL certificates
-    cert_dir = "/etc/ssl/certs/vsftpd.pem"
-    key_dir = "/etc/ssl/private/vsftpd.key"
     run_command(
-        f"sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout {key_dir} -out {cert_dir} -subj '/CN=vsftpd'",
+        "sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.key -out /etc/ssl/certs/vsftpd.pem -subj '/CN=vsftpd'",
         "Generating SSL certificates",
     )
 
     # Add users to whitelist
     users = ["ftpuser1", "ftpuser2"]  # Replace with your desired users
-    whitelist_path = "/etc/vsftpd.userlist"
     with open("temp_userlist", "w") as file:
         file.write("\n".join(users) + "\n")
-    run_command(f"sudo mv temp_userlist {whitelist_path}", "Updating vsftpd user whitelist")
+    run_command("sudo mv temp_userlist /etc/vsftpd.userlist", "Updating vsftpd user whitelist")
 
     # Configure firewall
-    run_command("sudo iptables -A INPUT -p tcp --dport 21 -j ACCEPT", "Allowing FTP port 21")
-    run_command("sudo iptables -A INPUT -p tcp --dport 40000:50000 -j ACCEPT", "Allowing passive mode ports")
-    run_command("sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT", "Allowing established connections")
-    run_command("sudo iptables-save > /etc/iptables/rules.v4", "Saving iptables rules")
+    run_command("sudo ufw allow 21/tcp && sudo ufw allow 40000:50000/tcp && sudo ufw reload", "Configuring firewall")
 
     # Restart and enable vsftpd service
-    run_command("sudo systemctl restart vsftpd", "Restarting vsftpd service")
-    run_command("sudo systemctl enable vsftpd", "Enabling vsftpd service on startup")
+    run_command("sudo systemctl restart vsftpd && sudo systemctl enable vsftpd", "Restarting and enabling vsftpd service")
 
     print("[SUCCESS] vsftpd has been successfully installed and configured.")

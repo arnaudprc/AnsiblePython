@@ -30,7 +30,8 @@ def main_menu():
                 configure_vsftpd(client, password)
 
         elif answers['choice'] == 'Uninstall packages':
-            uninstall_package(client, password)
+            package_name = input("Enter the package name to uninstall: ")
+            uninstall_package(client, package_name, password)
 
         elif answers['choice'] == 'Quit':
             break

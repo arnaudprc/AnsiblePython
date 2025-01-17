@@ -9,31 +9,19 @@ def ssh_connect():
     client.connect(hostname, username=username, password=password)
     return client, password
 
-def install_package(client, package_name, sudo_password):
-    try:
-        command = f'echo {sudo_password} | sudo -S apt-get update && echo {sudo_password} | sudo -S apt-get install -y {package_name}'
-        stdin, stdout, stderr = client.exec_command(command, get_pty=True)
-        print("Output:")
-        for line in stdout:
-            print(line.strip())
-        print("Error:")
-        for line in stderr:
-            print(line.strip())
-        print(f"Package '{package_name}' installed successfully.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+def run_command(client, command, sudo_password):
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    stdin.write(sudo_password + '\n')
+    stdin.flush()
+    print(stdout.read().decode())
+    error = stderr.read().decode()
+    if error:
+        print(f"[ERROR] {command}. Error: {error}")
+    else:
+        print(f"[SUCCESS] {command}.")
 
-def uninstall_package(client, sudo_password):
-    package_name = input("Enter the package name to uninstall: ")
-    try:
-        command = f'echo {sudo_password} | sudo -S apt-get remove -y {package_name}'
-        stdin, stdout, stderr = client.exec_command(command, get_pty=True)
-        print("Output:")
-        for line in stdout:
-            print(line.strip())
-        print("Error:")
-        for line in stderr:
-            print(line.strip())
-        print(f"Package '{package_name}' uninstalled successfully.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+def install_package(client, package_name, sudo_password):
+    run_command(client, f"sudo apt update && sudo apt install -y {package_name}", sudo_password)
+
+def uninstall_package(client, package_name, sudo_password):
+    run_command(client, f"sudo apt remove -y {package_name}", sudo_password)
