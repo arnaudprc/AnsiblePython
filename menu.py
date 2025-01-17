@@ -29,7 +29,7 @@ def main_menu():
             elif package_name == 'vsftpd':
                 configure_vsftpd(client, password)
 
-        elif answers['choice'] == 'Uninstall packages (apache2, vsftpd)':
+        elif answers['choice'] == 'Uninstall packages':
             uninstall_package(client, password)
 
         elif answers['choice'] == 'Quit':

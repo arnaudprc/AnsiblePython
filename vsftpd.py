@@ -1,15 +1,16 @@
-import os
-import subprocess
-
-def configure_vsftpd():
+def configure_vsftpd(client, sudo_password):
     """Install, configure, and secure vsftpd."""
     def run_command(command, description):
         """Execute a shell command and print its status."""
         print(f"[INFO] {description}...")
         try:
-            subprocess.run(command, shell=True, check=True)
+            stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+            stdin.write(sudo_password + '\n')
+            stdin.flush()
             print(f"[SUCCESS] {description}.")
-        except subprocess.CalledProcessError as e:
+            print(stdout.read().decode())
+            print(stderr.read().decode())
+        except Exception as e:
             print(f"[ERROR] {description}. Error: {e}")
             exit(1)
 
