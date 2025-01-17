@@ -3,11 +3,11 @@ def configure_vsftpd(client, sudo_password):
     def run_command(command, description):
         """Exécute une commande shell et affiche son statut."""
         print(f"[INFO] {description}...")
-        stdin, stdout, stderr = client.exec_command(command, get_pty=True)
-        stdin.write(sudo_password + '\n')
-        stdin.flush()
-        print(stdout.read().decode())
+        stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
+        output = stdout.read().decode()
         error = stderr.read().decode()
+        if output:
+            print(output)
         if error:
             print(f"[ERROR] {description}. Error: {error}")
         else:
@@ -19,6 +19,7 @@ def configure_vsftpd(client, sudo_password):
     run_command("sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.backup", "Sauvegarde vsftpd.conf")
 
     config = """anonymous_enable=NO
+listen_port=22
 local_enable=YES
 write_enable=NO
 chroot_local_user=YES
@@ -39,20 +40,14 @@ xferlog_enable=YES
 log_ftp_protocol=YES
 xferlog_file=/var/log/vsftpd.log
 """
-    with open("temp_vsftpd.conf", "w") as file:
-        file.write(config)
-    run_command("sudo mv temp_vsftpd.conf /etc/vsftpd.conf", "Application de la nouvelle configuration de vsftpd")
+    run_command(f"echo '{config}' | sudo tee /etc/vsftpd.conf", "Application de la nouvelle configuration de vsftpd")
 
     run_command(
         "sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.key -out /etc/ssl/certs/vsftpd.pem -subj '/CN=vsftpd'",
         "Génération des certificats SSL",
     )
-
-    users = ["lab"]
-    with open("temp_userlist", "w") as file:
-        file.write("\n".join(users) + "\n")
     run_command("sudo mv temp_userlist /etc/vsftpd.userlist", "Mise à jour de la liste blanche des utilisateurs de vsftpd")
     run_command("sudo ufw allow 21/tcp && sudo ufw allow 40000:50000/tcp && sudo ufw reload", "Configuration du pare-feu")
-    run_command("sudo systemctl restart vsftpd && sudo systemctl enable vsftpd", "Redémarrage et activation du service vsftpd")
+    run_command("sudo systemctl restart vsftpd && sudo systemctl enable vsftpd", "Redémarrage du service vsftpd et activation au démarrage de vsftpd")
 
-    print("[SUCCESS]  vsftpd a été installé et configuré avec succès.")
+    print("[SUCCESS] Installation et configuraiton de vsftpd.")

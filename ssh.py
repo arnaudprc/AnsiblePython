@@ -1,7 +1,7 @@
 import paramiko
 
 def ssh_connect():
-    hostname = input("Entrer l'adresse Ip de la machine: ")
+    hostname = input("Entrer l'adresse IP de la machine: ")
     username = input("Entrer le nom d'utilisateur: ")
     password = input("Entrer le mot de passe: ")
     client = paramiko.SSHClient()
