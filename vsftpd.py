@@ -66,9 +66,10 @@ xferlog_file=/var/log/vsftpd.log
     run_command(f"sudo mv temp_userlist {whitelist_path}", "Updating vsftpd user whitelist")
 
     # Configure firewall
-    run_command("sudo ufw allow 21/tcp", "Allowing FTP port 21")
-    run_command("sudo ufw allow 40000:50000/tcp", "Allowing passive mode ports")
-    run_command("sudo ufw reload", "Reloading UFW rules")
+    run_command("sudo iptables -A INPUT -p tcp --dport 21 -j ACCEPT", "Allowing FTP port 21")
+    run_command("sudo iptables -A INPUT -p tcp --dport 40000:50000 -j ACCEPT", "Allowing passive mode ports")
+    run_command("sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT", "Allowing established connections")
+    run_command("sudo iptables-save > /etc/iptables/rules.v4", "Saving iptables rules")
 
     # Restart and enable vsftpd service
     run_command("sudo systemctl restart vsftpd", "Restarting vsftpd service")
