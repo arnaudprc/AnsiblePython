@@ -25,3 +25,4 @@ def install_package(client, package_name, sudo_password):
 
 def uninstall_package(client, package_name, sudo_password):
     run_command(client, f"sudo apt remove -y {package_name}", sudo_password)
+    run_command(client, f"sudo apt purge -y {package_name}", sudo_password)
