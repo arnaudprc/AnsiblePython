@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from ssh import ssh_connect, install_package, uninstall_package
 from apache import configure_https_and_hardening
 from vsftpd import configure_vsftpd
+from network import configure_network
 #from user import add_user
 
 def main_menu():
@@ -16,7 +17,7 @@ def main_menu():
         questions = [
             inquirer.List('choice',
                           message="Que voulez-vous faire ?",
-                          choices=['Installer un package (apache2, vsftpd)', 'Désinstaller un package', 'Quitter'],
+                          choices=['Installer un package (apache2, vsftpd)', 'Configurer la carte réseau', 'Désinstaller un package', 'Quitter'],
                           ),
         ]
         answers = inquirer.prompt(questions)
@@ -29,6 +30,15 @@ def main_menu():
                 configure_https_and_hardening(client, password)
             elif package_name == 'vsftpd':
                 configure_vsftpd(client, password)
+
+        elif answers['choice'] == 'Configurer la carte réseau':
+            print("Configuration de la carte réseau...")
+            interface = input("Entrez le nom de l'interface réseau : ")
+            address = input("Entrez l'adresse IP avec le masque CIDR : ")
+            gateway = input("Entrez l'adresse de la passerelle : ")
+            dns = input("Entrez l'adresse du serveur DNS : ")
+            configure_network(client, password, interface, address, gateway, dns)
+            
 
         elif answers['choice'] == 'Désinstaller un package':
             package_name = input("Entrer le nom du package à désinstaller: ")
