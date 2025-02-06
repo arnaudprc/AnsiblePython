@@ -1,16 +1,14 @@
 # Fonction pour exécuter une commande sur la machine distante
 def run_command(client, command, sudo_password):
-        print(f"[INFO] Exécution de la commande : {command}")
-        stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
-        output = stdout.read().decode()
-        error = stderr.read().decode()
-        if output:
-            print(output)
-        if error:
-            print(f"[ERROR] Erreur lors de l'exécution de la commande : {command}. Error: {error}")
-        else:
-            print(f"[SUCCESS] Commande exécutée avec succès : {command}")
-            
+    print(f"[INFO] Exécution de la commande : {command}")
+    stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
+    output = stdout.read().decode()
+    error = stderr.read().decode()
+    if error:
+        print(f"[ERROR] Erreur lors de l'exécution de la commande : {command}. Error: {error}")
+    else:
+        print(f"[SUCCESS] Commande exécutée avec succès : {command}")
+
 # Fonction pour installer et configurer vsftpd
 def configure_vsftpd(client, sudo_password):
     print("[INFO] Début de l'installation et de la configuration de vsftpd...")
@@ -49,7 +47,7 @@ xferlog_file=/var/log/vsftpd.log
 
     utilisateurs = ["lab"]
     userlist = "\n".join(utilisateurs)
-    command = f"echo '{userlist}' | sudo bash -c 'cat > /etc/vsftpd.userlist'"
+    command = f"echo '{userlist}' | sudo tee /etc/vsftpd.userlist"
     run_command(client, command, sudo_password)
 
     run_command(client, "sudo ufw allow 21/tcp && sudo ufw allow 40000:50000/tcp && sudo ufw reload", sudo_password)

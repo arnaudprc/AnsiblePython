@@ -10,6 +10,7 @@ from apache import configure_https_and_hardening
 from vsftpd import configure_vsftpd
 from network import configure_network, get_network_interfaces
 from user import add_user, add_user_sudo
+from zabbix import install_zabbix
 
 # Fonction pour afficher le menu principal
 def main_menu(client, password):
@@ -17,19 +18,23 @@ def main_menu(client, password):
         questions = [
             inquirer.List('choice',
                           message="Que voulez-vous faire ?",
-                          choices=['Installer un package (apache2, vsftpd)', 'Configurer la carte réseau', 'Désinstaller un package', 'Ajouter un utilisateur', 'Quitter'],
+                          choices=['Installer un package (apache2, vsftpd, zabbix)', 'Configurer la carte réseau', 'Désinstaller un package', 'Ajouter un utilisateur', 'Quitter'],
                           ),
         ]
         answers = inquirer.prompt(questions)
         print(f"Votre choix: {answers['choice']}")
 
-        if answers['choice'] == 'Installer un package (apache2, vsftpd)':
-            package_name = input("Entrer le nom du package à installer (apache2 ou vsftpd): ")
-            install_package(client, package_name, password)
-            if package_name == 'apache2':
-                configure_https_and_hardening(client, password)
-            elif package_name == 'vsftpd':
-                configure_vsftpd(client, password)
+        if answers['choice'] == 'Installer un package (apache2, vsftpd, zabbix)':
+            package_name = input("Entrer le nom du package à installer (apache2 ou vsftpd, zabbix): ")
+            if package_name == 'zabbix':
+                install_zabbix(client, password)
+            else:
+                install_package(client, package_name, password)
+                if package_name == 'apache2':
+                    configure_https_and_hardening(client, password)
+                elif package_name == 'vsftpd':
+                    configure_vsftpd(client, password)
+
 
         elif answers['choice'] == 'Configurer la carte réseau':
             interfaces = get_network_interfaces(client)
