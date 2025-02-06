@@ -1,4 +1,5 @@
 import paramiko
+# Fonction pour exécuter une commande sur la machine distante
 def run_command(client, command, sudo_password, description):
     print(f"[INFO] {description}...")
     stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
@@ -11,6 +12,7 @@ def run_command(client, command, sudo_password, description):
     else:
         print(f"[SUCCESS] {description}.")
 
+# Fonction pour se connecter à une machine distante via SSH
 def ssh_connect(hostname=None):
     while True:
         try:
@@ -31,9 +33,11 @@ def ssh_connect(hostname=None):
         except Exception as e:
             print(f"[ERROR] Connexion échouée : {str(e)}. Veuillez réessayer.")
 
+# Fonction pour installer un package sur la machine distante
 def install_package(client, package_name, sudo_password):
     run_command(client, f"sudo apt update && sudo apt install -y {package_name}", sudo_password, f"Installation du package {package_name}")
 
+# Fonction pour désinstaller un package sur la machine distante
 def uninstall_package(client, package_name, sudo_password):
     run_command(client, f"sudo apt remove -y {package_name}", sudo_password, f"Désinstallation du package {package_name}")
     run_command(client, f"sudo apt purge -y {package_name}", sudo_password, f"Purge du package {package_name}")

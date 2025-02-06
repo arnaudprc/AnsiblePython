@@ -11,6 +11,7 @@ from vsftpd import configure_vsftpd
 from network import configure_network, get_network_interfaces
 from user import add_user, add_user_sudo
 
+# Fonction pour afficher le menu principal
 def main_menu(client, password):
     while True:
         questions = [

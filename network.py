@@ -12,6 +12,7 @@ def run_command(client, command, sudo_password, description):
     else:
         print(f"[SUCCESS] {description}.")
 
+# Fonction pour obtenir la liste des interfaces réseau
 def get_network_interfaces(client):
     stdin, stdout, stderr = client.exec_command("ip link show")
     output = stdout.read().decode()
@@ -23,6 +24,7 @@ def get_network_interfaces(client):
                 interfaces.append(interface)
     return interfaces
 
+# Fonction pour configurer le réseau
 def configure_network(client, sudo_password, interface, address, gateway, dns):
     netplan_config = f"""
 network:

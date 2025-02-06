@@ -1,3 +1,4 @@
+# Fonction pour exécuter une commande sur la machine distante
 def run_command(client, command, sudo_password):
     stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
     output = stdout.read().decode()
@@ -9,6 +10,7 @@ def run_command(client, command, sudo_password):
     else:
         print(f"[SUCCESS] {command}.")
 
+# Fonction pour configurer Apache
 def configure_https_and_hardening(client, sudo_password):
     commands = [
         "apt-get install -y openssl",
