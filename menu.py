@@ -9,6 +9,7 @@ from ssh import ssh_connect, install_package, uninstall_package
 from apache import configure_https_and_hardening
 from vsftpd import configure_vsftpd
 from network import configure_network
+from user import add_user, add_user_sudo
 
 def main_menu():
     client, password = ssh_connect()
