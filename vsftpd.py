@@ -1,6 +1,6 @@
 def configure_vsftpd(client, sudo_password):
-    def run_command(client, command, sudo_password, description):
-        print(f"[INFO] {description}...")
+    def run_command(client, command, sudo_password):
+        print(f"[INFO] Exécution de la commande : {command}")
     
         # Exécute la commande sur la machine distante avec sudo
         stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
@@ -9,20 +9,20 @@ def configure_vsftpd(client, sudo_password):
         output = stdout.read().decode()
         error = stderr.read().decode()
 
-    # Affiche la sortie de la commande si elle existe
+        # Affiche la sortie de la commande si elle existe
         if output:
             print(output)
 
-    # Affiche l'erreur de la commande si elle existe
+        # Affiche l'erreur de la commande si elle existe
         if error:
-            print(f"[ERROR] {description}. Error: {error}")
+            print(f"[ERROR] Erreur lors de l'exécution de la commande : {command}. Error: {error}")
         else:
-            print(f"[SUCCESS] {description}.")
+            print(f"[SUCCESS] Commande exécutée avec succès : {command}")
 
-        print("[INFO] Début de l'installation et de la configuration de vsftpd...")
+    print("[INFO] Début de l'installation et de la configuration de vsftpd...")
 
-    run_command("sudo apt update && sudo apt install -y vsftpd", "Installation de vsftpd")
-    run_command("sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.backup", "Sauvegarde de vsftpd.conf")
+    run_command(client, "sudo apt update && sudo apt install -y vsftpd", sudo_password)
+    run_command(client, "sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.backup", sudo_password)
 
     config = """anonymous_enable=NO
 listen_port=22
@@ -46,21 +46,20 @@ xferlog_enable=YES
 log_ftp_protocol=YES
 xferlog_file=/var/log/vsftpd.log
 """
-    command = f"echo '{config}' | sudo tee /etc/vsftpd.conf"
-    run_command(command, "Application de la nouvelle configuration de vsftpd")
 
-    run_command(
-        "sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.key -out /etc/ssl/certs/vsftpd.pem -subj '/CN=vsftpd'",
-        "Génération des certificats SSL",
-    )
+    # Écrire la configuration directement dans le fichier distant
+    command = f"echo '{config}' | sudo bash -c 'cat > /etc/vsftpd.conf'"
+    run_command(client, command, sudo_password)
+
+    run_command(client, "sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.key -out /etc/ssl/certs/vsftpd.pem -subj '/CN=vsftpd'", sudo_password)
 
     utilisateurs = ["lab"]
     userlist = "\n".join(utilisateurs)
-    command = f"echo '{userlist}' | sudo tee /etc/vsftpd.userlist"
-    run_command(command, "Mise à jour de la liste blanche des utilisateurs de vsftpd")
+    command = f"echo '{userlist}' | sudo bash -c 'cat > /etc/vsftpd.userlist'"
+    run_command(client, command, sudo_password)
 
-    run_command("sudo ufw allow 21/tcp && sudo ufw allow 40000:50000/tcp && sudo ufw reload", "Configuration du pare-feu")
+    run_command(client, "sudo ufw allow 21/tcp && sudo ufw allow 40000:50000/tcp && sudo ufw reload", sudo_password)
 
-    run_command("sudo systemctl restart vsftpd && sudo systemctl enable vsftpd", "Redémarrage et activation du service vsftpd")
+    run_command(client, "sudo systemctl restart vsftpd && sudo systemctl enable vsftpd", sudo_password)
 
     print("[SUCCÈS] vsftpd a été installé et configuré avec succès.")
