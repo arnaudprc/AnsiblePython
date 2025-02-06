@@ -25,11 +25,8 @@ network:
       nameservers:
         addresses: [{dns}]
 """
-    # Écrire la configuration directement dans le fichier distant
     command = f"echo '{netplan_config}' | sudo tee /etc/netplan/50-cloud-init.yaml"
     run_command(client, command, sudo_password)
-
-    # Appliquer la nouvelle configuration sur la machine distante
     run_command(client, "sudo netplan apply", sudo_password)
 
 def main():

@@ -44,7 +44,10 @@ def main_menu():
         elif answers['choice'] == 'Ajouter un utilisateur':
             username = input("Entrez le nom de l'utilisateur à ajouter: ")
             sudo = inquirer.confirm("L'utilisateur doit-il être ajouté au groupe sudo ?", default=False)
-            add_user(client, password, username, sudo)
+            if sudo:
+                add_user_sudo(client, username, password)
+            else:
+                add_user(client, username, password)
 
         elif answers['choice'] == 'Quitter':
             break
