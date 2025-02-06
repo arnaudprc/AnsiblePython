@@ -5,7 +5,7 @@ import inquirer
 # Ajouter le répertoire courant au chemin de recherche des modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from ssh import ssh_connect
+from ssh import ssh_connect, install_package, uninstall_package
 from apache import configure_https_and_hardening
 from vsftpd import configure_vsftpd
 from network import configure_network, get_network_interfaces

@@ -1,4 +1,15 @@
 import paramiko
+def run_command(client, command, sudo_password, description):
+    print(f"[INFO] {description}...")
+    stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
+    output = stdout.read().decode()
+    error = stderr.read().decode()
+    if output:
+        print(output)
+    if error:
+        print(f"[ERROR] {description}. Error: {error}")
+    else:
+        print(f"[SUCCESS] {description}.")
 
 def ssh_connect(hostname=None):
     while True:
@@ -19,3 +30,10 @@ def ssh_connect(hostname=None):
             print("[ERROR] Connexion échouée : Authentification échouée. Veuillez vérifier le nom d'utilisateur et le mot de passe.")
         except Exception as e:
             print(f"[ERROR] Connexion échouée : {str(e)}. Veuillez réessayer.")
+
+def install_package(client, package_name, sudo_password):
+    run_command(client, f"sudo apt update && sudo apt install -y {package_name}", sudo_password, f"Installation du package {package_name}")
+
+def uninstall_package(client, package_name, sudo_password):
+    run_command(client, f"sudo apt remove -y {package_name}", sudo_password, f"Désinstallation du package {package_name}")
+    run_command(client, f"sudo apt purge -y {package_name}", sudo_password, f"Purge du package {package_name}")
