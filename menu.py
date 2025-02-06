@@ -5,14 +5,13 @@ import inquirer
 # Ajouter le répertoire courant au chemin de recherche des modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from ssh import ssh_connect, install_package, uninstall_package
+from ssh import ssh_connect
 from apache import configure_https_and_hardening
 from vsftpd import configure_vsftpd
-from network import configure_network
+from network import configure_network, get_network_interfaces
 from user import add_user, add_user_sudo
 
-def main_menu():
-    client, password = ssh_connect()
+def main_menu(client, password):
     while True:
         questions = [
             inquirer.List('choice',
@@ -32,11 +31,28 @@ def main_menu():
                 configure_vsftpd(client, password)
 
         elif answers['choice'] == 'Configurer la carte réseau':
-            interface = input("Entrez le nom de l'interface réseau : ")
+            interfaces = get_network_interfaces(client)
+            print("Interfaces réseau disponibles :")
+            for i, interface in enumerate(interfaces):
+                print(f"{i + 1}. {interface}")
+
+            interface_index = int(input("Choisissez l'interface à configurer (numéro) : ")) - 1
+            interface = interfaces[interface_index]
+
             address = input("Entrez l'adresse IP avec le masque CIDR : ")
             gateway = input("Entrez l'adresse de la passerelle : ")
             dns = input("Entrez l'adresse du serveur DNS : ")
             configure_network(client, password, interface, address, gateway, dns)
+
+            print("[INFO] Configuration réseau terminée. Reconnexion SSH nécessaire.")
+            client.close()
+
+            # Reconnexion SSH après changement d'adresse IP
+            client, password = ssh_connect(address.split('/')[0])
+
+            print("[INFO] Reconnexion SSH réussie après changement d'adresse IP.")
+            # Relancer le menu principal après la reconnexion
+            main_menu(client, password)
 
         elif answers['choice'] == 'Désinstaller un package':
             package_name = input("Entrer le nom du package à désinstaller: ")
@@ -57,4 +73,5 @@ def main_menu():
     client.close()
 
 if __name__ == "__main__":
-    main_menu()
+    client, password = ssh_connect()
+    main_menu(client, password)

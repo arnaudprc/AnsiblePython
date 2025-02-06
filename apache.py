@@ -1,6 +1,5 @@
 def run_command(client, command, sudo_password):
     stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
-
     output = stdout.read().decode()
     error = stderr.read().decode()
     if output:

@@ -2,23 +2,26 @@ import paramiko
 
 def run_command(client, command, sudo_password, description):
     print(f"[INFO] {description}...")
-    
-    # Exécute la commande sur la machine distante avec sudo
     stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
-    
-    # Lit la sortie de la commande
     output = stdout.read().decode()
     error = stderr.read().decode()
-
-    # Affiche la sortie de la commande si elle existe
     if output:
         print(output)
-
-    # Affiche l'erreur de la commande si elle existe
     if error:
         print(f"[ERROR] {description}. Error: {error}")
     else:
         print(f"[SUCCESS] {description}.")
+
+def get_network_interfaces(client):
+    stdin, stdout, stderr = client.exec_command("ip link show")
+    output = stdout.read().decode()
+    interfaces = []
+    for line in output.split('\n'):
+        if ': ' in line:
+            interface = line.split(': ')[1].split('@')[0]
+            if interface != 'lo':  # Exclure l'interface loopback
+                interfaces.append(interface)
+    return interfaces
 
 def configure_network(client, sudo_password, interface, address, gateway, dns):
     netplan_config = f"""
@@ -30,29 +33,10 @@ network:
         - {address}
       gateway4: {gateway}
       nameservers:
-        addresses: [{dns}]
+        addresses:
+          - {dns}
 """
-    command = f"echo '{netplan_config}' | sudo tee /etc/netplan/50-cloud-init.yaml"
-    run_command(client, command, sudo_password)
-    run_command(client, "sudo netplan apply", sudo_password)
-
-def main():
-    hostname = input("Entrez le nom d'hôte ou l'adresse IP de la machine distante: ")
-    username = input("Entrez votre nom d'utilisateur: ")
-    password = input("Entrez votre mot de passe: ")
-
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(hostname, username=username, password=password)
-
-    interface = input("Entrez le nom de l'interface réseau : ")
-    address = input("Entrez l'adresse IP avec le masque CIDR : ")
-    gateway = input("Entrez l'adresse de la passerelle : ")
-    dns = input("Entrez l'adresse du serveur DNS : ")
-
-    configure_network(client, password, interface, address, gateway, dns)
-
-    client.close()
-
-if __name__ == "__main__":
-    main()
+    command = f"echo '{netplan_config}' | sudo bash -c 'cat > /etc/netplan/50-cloud-init.yaml'"
+    run_command(client, command, sudo_password, "Configuration du réseau")
+    run_command(client, "sudo netplan apply", sudo_password, "Application de la configuration réseau")
+    run_command(client, "sudo systemctl restart systemd-networkd", sudo_password, "Redémarrage de systemd-networkd")
