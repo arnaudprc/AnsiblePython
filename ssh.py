@@ -1,5 +1,5 @@
 import paramiko
-from user import run_command  # Assurez-vous que run_command est défini dans user.py
+from user import run_command
 
 def ssh_connect():
     while True:
