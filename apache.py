@@ -1,14 +1,4 @@
-# Fonction pour exécuter une commande sur la machine distante
-def run_command(client, command, sudo_password):
-    stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
-    output = stdout.read().decode()
-    error = stderr.read().decode()
-    if output:
-        print(output)
-    if error:
-        print(f"[ERROR] {command}. Error: {error}")
-    else:
-        print(f"[SUCCESS] {command}.")
+from ssh import run_command
 
 # Fonction pour configurer Apache
 def configure_https_and_hardening(client, sudo_password):

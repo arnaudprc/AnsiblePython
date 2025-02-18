@@ -1,4 +1,5 @@
 import paramiko
+from ssh import run_command
 
 def run_command(client, command, sudo_password, description):
     print(f"[INFO] {description}...")

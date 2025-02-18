@@ -1,15 +1,4 @@
-# Fonction pour exécuter une commande sur la machine distante
-def run_command(client, command, sudo_password):
-    print(f"[INFO] Exécution de la commande : {command}")
-    stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
-    output = stdout.read().decode()
-    error = stderr.read().decode()
-    if output:
-        print(output)
-    if error:
-        print(f"[ERROR] Erreur lors de l'exécution de la commande : {command}. Error: {error}")
-    else:
-        print(f"[SUCCESS] Commande exécutée avec succès : {command}")
+from ssh import run_command
 
 # Fonction pour ajouter un utilisateur sur la machine distante
 def add_user(client, sudo_password, username, user_password):
