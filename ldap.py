@@ -6,10 +6,9 @@ def configure_ldap(client, sudo_password):
     run_command(client, "apt-get install -y slapd ldap-utils", sudo_password, "Installation de LDAP")
 
     # Générer un mot de passe hashé pour LDAP
-    print("[INFO] Génération du mot de passe hashé pour LDAP...")
-    stdin, stdout, stderr = client.exec_command("slappasswd", get_pty=True)
+    ldap_password = input("Entrez le mot de passe LDAP: ")
+    stdin, stdout, stderr = client.exec_command(f"slappasswd -s {ldap_password}", get_pty=True)
     password_hash = stdout.read().decode().strip()
-    print(f"[SUCCESS] Mot de passe hashé généré : {password_hash}")
 
     # Configurer LDAP
     ldap_config = f"""
@@ -58,7 +57,7 @@ description: LDAP administrator
     with open("/tmp/base.ldif", "w") as f:
         f.write(base_entry)
 
-    run_command(client, f"sudo ldapadd -x -D cn=admin,dc=esgi,dc=local -w '{sudo_password}' -f /tmp/base.ldif", "Ajout de l'entrée de base LDAP")
+    run_command(client, f"sudo ldapadd -x -D cn=admin,dc=esgi,dc=local -w '{ldap_password}' -f /tmp/base.ldif", sudo_password, "Ajout de l'entrée de base LDAP")
 
 def test_ldap(client, sudo_password):
     # Tester la connexion LDAP

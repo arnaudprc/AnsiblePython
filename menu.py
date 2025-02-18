@@ -36,7 +36,6 @@ def main_menu(client, password):
                 elif package_name == 'vsftpd':
                     configure_vsftpd(client, password)
 
-
         elif answers['choice'] == 'Configurer la carte réseau':
             interfaces = get_network_interfaces(client)
             print("Interfaces réseau disponibles :")
