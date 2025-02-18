@@ -1,16 +1,17 @@
 import paramiko
 
 # Fonction pour exécuter une commande sur la machine distante
-def run_command(client, command, sudo_password):
+def run_command(client, command, sudo_password, description):
+    print(f"[INFO] {description}...")
     stdin, stdout, stderr = client.exec_command(f"echo {sudo_password} | sudo -S {command}", get_pty=True)
     output = stdout.read().decode()
     error = stderr.read().decode()
     if output:
         print(output)
     if error:
-        print(f"[ERROR] Commande échouée. Error: {error}")
+        print(f"[ERROR] {description}. Error: {error}")
     else:
-        print(f"[SUCCESS] Commande réussie.")
+        print(f"[SUCCESS] {description}.")
 
 # Fonction pour se connecter à une machine distante via SSH
 def ssh_connect(hostname=None):
@@ -35,9 +36,9 @@ def ssh_connect(hostname=None):
 
 # Fonction pour installer un package sur la machine distante
 def install_package(client, package_name, sudo_password):
-    run_command(client, f"sudo apt update && sudo apt install -y {package_name}", sudo_password)
+    run_command(client, f"sudo apt update && sudo apt install -y {package_name}", sudo_password, f"Installation du package {package_name}")
 
 # Fonction pour désinstaller un package sur la machine distante
 def uninstall_package(client, package_name, sudo_password):
-    run_command(client, f"sudo apt remove -y {package_name}", sudo_password)
-    run_command(client, f"sudo apt purge -y {package_name}", sudo_password)
+    run_command(client, f"sudo apt remove -y {package_name}", sudo_password, f"Désinstallation du package {package_name}")
+    run_command(client, f"sudo apt purge -y {package_name}", sudo_password, f"Purge du package {package_name}")
