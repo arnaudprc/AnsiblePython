@@ -4,8 +4,8 @@ from ssh import run_command
 def configure_vsftpd(client, sudo_password):
     print("[INFO] Début de l'installation et de la configuration de vsftpd...")
 
-    run_command(client, "sudo apt update && sudo apt install -y vsftpd", sudo_password)
-    run_command(client, "sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.backup", sudo_password)
+    run_command(client, "sudo apt update && sudo apt install -y vsftpd", sudo_password, "Installation de vsftpd")
+    run_command(client, "sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.backup", sudo_password, "Sauvegarde du fichier de configuration original")
 
     config = """anonymous_enable=NO
 listen_port=22
@@ -41,8 +41,8 @@ xferlog_file=/var/log/vsftpd.log
     command = f"echo '{userlist}' | sudo tee /etc/vsftpd.userlist"
     run_command(client, command, sudo_password)
 
-    run_command(client, "sudo ufw allow 21/tcp && sudo ufw allow 40000:50000/tcp && sudo ufw reload", sudo_password)
+    run_command(client, "sudo ufw allow 21/tcp && sudo ufw allow 40000:50000/tcp && sudo ufw reload", sudo_password, "Configuration du pare-feu")
 
-    run_command(client, "sudo systemctl restart vsftpd && sudo systemctl enable vsftpd", sudo_password)
+    run_command(client, "sudo systemctl restart vsftpd && sudo systemctl enable vsftpd", sudo_password, "Redémarrage et activation du service vsftpd")
 
     print("[SUCCÈS] vsftpd a été installé et configuré avec succès.")
