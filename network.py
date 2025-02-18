@@ -38,6 +38,7 @@ network:
         addresses:
           - {dns}
 """
+    # Créer une commande shell pour copié le contenu de netplan_config dans le fichier /etc/netplan/50-cloud-init.yaml
     command = f"echo '{netplan_config}' | sudo bash -c 'cat > /etc/netplan/50-cloud-init.yaml'"
     run_command(client, command, sudo_password, "Configuration du réseau")
     run_command(client, "sudo netplan apply", sudo_password, "Application de la configuration réseau")
