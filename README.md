@@ -7,10 +7,8 @@ Ce projet permet de gérer des configurations de serveurs distants via SSH en ut
 - Python 3.x
 - Bibliothèques Python: `paramiko`, `inquirer`
 
-Vous pouvez installer les bibliothèques nécessaires avec la commande suivante:
-```sh
-pip install paramiko inquirer
+Utilisation 
 
-Utilisation
+python3 menu.py
 
 
