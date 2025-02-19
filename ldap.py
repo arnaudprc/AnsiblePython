@@ -54,10 +54,8 @@ cn: admin
 userPassword: {password_hash}
 description: LDAP administrator
 """
-    with open("/tmp/base.ldif", "w") as f:
-        f.write(base_entry)
-
-    run_command(client, f"sudo ldapadd -x -D cn=admin,dc=esgi,dc=local -w '{ldap_password}' -f /tmp/base.ldif", sudo_password, "Ajout de l'entrée de base LDAP")
+    command = f"echo '{base_entry}' | sudo ldapadd -x -D cn=admin,dc=esgi,dc=local -w '{ldap_password}'"
+    run_command(client, command, sudo_password, "Ajout de l'entrée de base LDAP")
 
 def test_ldap(client, sudo_password):
     # Tester la connexion LDAP

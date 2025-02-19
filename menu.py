@@ -5,7 +5,7 @@ import inquirer
 # Ajouter le répertoire courant au chemin de recherche des modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from ssh import ssh_connect, install_package, uninstall_package
+from ssh import ssh_connect, install_package, uninstall_package, run_command
 from apache import configure_https_and_hardening
 from vsftpd import configure_vsftpd
 from network import configure_network, get_network_interfaces
@@ -62,7 +62,12 @@ def main_menu(client, password):
 
         elif answers['choice'] == 'Désinstaller un package':
             package_name = input("Entrer le nom du package à désinstaller: ")
-            uninstall_package(client, package_name, password)
+            if package_name == 'ldap':
+                run_command(client, "sudo apt-get remove --purge slapd ldap-utils", password, "Désinstallation de LDAP")
+                run_command(client, "sudo rm -r /etc/ldap /var/lib/ldap", password, "Suppression des fichiers LDAP")
+                run_command(client, "sudo apt-get autoremove", password, "Nettoyage des dépendances inutilisées")
+            else:
+                uninstall_package(client, package_name, password)
 
         elif answers['choice'] == 'Ajouter un utilisateur':
             username = input("Entrez le nom de l'utilisateur à ajouter: ")

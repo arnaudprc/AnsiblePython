@@ -42,3 +42,4 @@ def install_package(client, package_name, sudo_password):
 def uninstall_package(client, package_name, sudo_password):
     run_command(client, f"sudo apt remove -y {package_name}", sudo_password, f"Désinstallation du package {package_name}")
     run_command(client, f"sudo apt purge -y {package_name}", sudo_password, f"Purge du package {package_name}")
+    run_command(client, "sudo apt autoremove -y", sudo_password, "Nettoyage des dépendances inutilisées")
