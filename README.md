@@ -10,5 +10,3 @@ Ce projet permet de gérer des configurations de serveurs distants via SSH en ut
 ## Utilisation 
 
 python3 menu.py
-
-
