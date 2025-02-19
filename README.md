@@ -7,7 +7,7 @@ Ce projet permet de gérer des configurations de serveurs distants via SSH en ut
 - Python 3.x
 - Bibliothèques Python: `paramiko`, `inquirer`
 
-Utilisation 
+## Utilisation 
 
 python3 menu.py
 
