@@ -12,7 +12,7 @@ python menu.py
 ### Fonctionnalités
 
 #### Installer un package : 
-Vous pouvez installer des packages comme apache2, vsftpd et zabbix. Après l'installation, des configurations supplémentaires peuvent être appliquées automatiquement.
+Vous pouvez installer des packages comme apache2, vsftpd et ldap. Après l'installation, des configurations supplémentaires peuvent être appliquées automatiquement.
 
 #### Configurer la carte réseau :
 Vous pouvez configurer les interfaces réseau en spécifiant l'adresse IP, la passerelle et le serveur DNS.
