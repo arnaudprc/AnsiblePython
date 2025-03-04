@@ -1,4 +1,5 @@
 import paramiko
+import getpass
 
 # Fonction pour exécuter une commande sur la machine distante
 def run_command(client, command, sudo_password, description):
@@ -20,7 +21,7 @@ def ssh_connect(hostname=None):
             if hostname is None:
                 hostname = input("Entrer l'adresse IP de la machine: ")
             username = input("Entrer le nom d'utilisateur: ")
-            password = input("Entrer le mot de passe: ")
+            password = getpass.getpass("Entrer le mot de passe: ")
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(hostname, username=username, password=password)
