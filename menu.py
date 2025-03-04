@@ -24,19 +24,7 @@ def main_menu(client, password):
         answers = inquirer.prompt(questions)
         print(f"Votre choix: {answers['choice']}")
 
-        if answers['choice'] == 'Installer un package (apache2, vsftpd, ldap)':
-            package_name = input("Entrer le nom du package à installer (apache2 ou vsftpd, ldap): ")
-            if package_name == 'ldap':
-                configure_ldap(client, password)
-                test_ldap(client, password)
-            else:
-                install_package(client, package_name, password)
-                if package_name == 'apache2':
-                    configure_https_and_hardening(client, password)
-                elif package_name == 'vsftpd':
-                    configure_vsftpd(client, password)
-
-        elif answers['choice'] == 'Configurer la carte réseau':
+        if answers['choice'] == 'Configurer la carte réseau':
             interfaces = get_network_interfaces(client)
             print("Interfaces réseau disponibles :")
             for i, interface in enumerate(interfaces):
@@ -48,17 +36,27 @@ def main_menu(client, password):
             address = input("Entrez l'adresse IP avec le masque CIDR : ")
             gateway = input("Entrez l'adresse de la passerelle : ")
             dns = input("Entrez l'adresse du serveur DNS : ")
-            configure_network(client, password, interface, address, gateway, dns)
+            new_client, new_password = configure_network(client, password, interface, address, gateway, dns)
 
-            print("[INFO] Configuration réseau terminée. Reconnexion SSH nécessaire.")
-            client.close()
+            if new_client and new_password:
+                client = new_client
+                password = new_password
+                print("Reconnexion SSH réussie après changement d'adresse IP.")
+            else:
+                print("Impossible de se reconnecter après le changement d'IP.")
+                return 
 
-            # Reconnexion SSH après changement d'adresse IP
-            client, password = ssh_connect(address.split('/')[0])
-
-            print("[INFO] Reconnexion SSH réussie après changement d'adresse IP.")
-            # Relancer le menu principal après la reconnexion
-            main_menu(client, password)
+        elif answers['choice'] == 'Installer un package (apache2, vsftpd, ldap)':
+            package_name = input("Entrer le nom du package à installer (apache2 ou vsftpd, ldap): ")
+            if package_name == 'ldap':
+                configure_ldap(client, password)
+                test_ldap(client, password)
+            else:
+                install_package(client, package_name, password)
+                if package_name == 'apache2':
+                    configure_https_and_hardening(client, password)
+                elif package_name == 'vsftpd':
+                    configure_vsftpd(client, password)
 
         elif answers['choice'] == 'Désinstaller un package':
             package_name = input("Entrer le nom du package à désinstaller: ")
